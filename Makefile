@@ -6,11 +6,12 @@ GOTEST=$(GOCMD) test
 GOGET=$(GOCMD) get
 BINARY_NAME=mins
 BINARY_UNIX=$(BINARY_NAME)_unix
+BINARY_NAME_WINDOW=$(BINARY_NAME).exe
 
 all: run
 
 build:
-	$(GOBUILD) -o ./build/$(BINARY_NAME) -v ./
+	$(GOBUILD) -o ./build/$(BINARY_UNIX) -v ./
 
 test:
 	$(GOTEST) -v ./
@@ -21,12 +22,12 @@ clean:
 	rm -f ./build/$(BINARY_UNIX)
 
 run:
-	$(GOBUILD) -o ./build/$(BINARY_NAME) -v ./
+	$(GOBUILD) -o ./build/$(BINARY_UNIX) -v ./
 	./build/$(BINARY_NAME)
 
 restart:
 	kill -INT $$(cat pid)
-	$(GOBUILD) -o ./build/$(BINARY_NAME) -v ./
+	$(GOBUILD) -o ./build/$(BINARY_UNIX) -v ./
 	./build/$(BINARY_NAME)
 
 deps:
@@ -35,3 +36,6 @@ deps:
 
 cross:
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GOBUILD) -o ./build/$(BINARY_NAME) -v ./
+
+crosswindow:
+	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 $(GOBUILD) -o ./build/$(BINARY_NAME_WINDOW) -v ./

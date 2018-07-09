@@ -14,6 +14,8 @@ import (
 	"strconv"
 	"os"
 	"os/signal"
+	"github.com/go-sql-driver/mysql"
+	"flag"
 )
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
@@ -22,23 +24,31 @@ func main() {
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
-	InitDB("root", "root", "3306", "localhost", "example")
-
 	fmt.Println("Hello Mins")
 
-	// param:
-	// config.ini
+	var configFile string
+	flag.StringVar(&configFile,"c", "./config.ini", "config path")
+	flag.Parse()
+
+	databseCfg, configErr := GetConfig(configFile, "database")
+
+	if configErr != nil {
+		panic(configErr)
+	}
+
+	InitDB(databseCfg["user"], databseCfg["password"], databseCfg["port"], databseCfg["addr"], databseCfg["database"])
 
 	router := fasthttprouter.New()
 
-	router.GET("/resource/:table", GetResources)
+	router.GET("/resource/:table/id/:id", GetResources)
 	router.DELETE("/resource/:table/id/:id", DeleteResources)
 	router.PUT("/resource/:table/id/:id", ModifyResources)
 	router.POST("/resource/:table", NewResources)
 	router.NotFound = NotFoundHandle
 
 	go func() {
-		fasthttp.ListenAndServe(":4006", router.Handler)
+		severCfg, _ := GetConfig(configFile, "server")
+		fasthttp.ListenAndServe(":" + severCfg["port"], router.Handler)
 	}()
 
 	osSignals := make(chan os.Signal)
@@ -55,9 +65,15 @@ func GetResources(ctx *fasthttp.RequestCtx)  {
 	defer handle(ctx)
 
 	table := ctx.UserValue("table").(string)
-	resource, _ := Query("select * from " + table)
+	id := ctx.UserValue("id").(string)
 
-	jsonByte, err := json.Marshal(resource)
+	resource, _ := Query("select * from " + table + " where id = ?", id)
+
+	if len(resource) < 1 {
+		ctx.WriteString(`{"code":200, "msg":"ok", "data": {}}`)
+	}
+
+	jsonByte, err := json.Marshal(resource[0])
 
 	if err != nil {
 		ctx.Error(`{"code":500, "msg":"json marshal error"}`, fasthttp.StatusInternalServerError)
@@ -68,23 +84,94 @@ func GetResources(ctx *fasthttp.RequestCtx)  {
 
 func NewResources(ctx *fasthttp.RequestCtx)  {
 	defer handle(ctx)
+
+	table := ctx.UserValue("table").(string)
+
+	columns := GetAllColumns(table)
+	fieldStr := ""
+	quesStr := ""
+	valueArr := make([]interface{}, 0)
+
+	for i := 0; i<len(columns) ; i++ {
+		if value, isIn := IsInFormValue(ctx, columns[i]["Field"].(string)); isIn {
+			fieldStr += "`" + columns[i]["Field"].(string) + "`,"
+			quesStr += "?,"
+			valueArr = append(valueArr, value)
+		}
+	}
+
+	fieldStr = SliceStr(fieldStr)
+	quesStr = SliceStr(quesStr)
+
+	Exec("insert into " + table + "(" + fieldStr + ") " + "values (" + quesStr + ")", valueArr...)
+
+	ctx.WriteString(`{"code":200, "msg":"ok"}`)
 }
 
 func DeleteResources(ctx *fasthttp.RequestCtx)  {
 	defer handle(ctx)
 	table := ctx.UserValue("table").(string)
-	id := string(ctx.QueryArgs().Peek("id")[:])
+	id := ctx.UserValue("id").(string)
 	Exec("delete from " + table + " where id = ?", id)
 	ctx.WriteString(`{"code":200, "msg":"ok"}`)
 }
 
 func ModifyResources(ctx *fasthttp.RequestCtx)  {
 	defer handle(ctx)
+
+	table := ctx.UserValue("table").(string)
+	id := ctx.UserValue("id").(string)
+
+	columns := GetAllColumns(table)
+	fieldStr := ""
+	valueArr := make([]interface{}, 0)
+
+	for i := 0; i<len(columns) ; i++ {
+		if value, isIn := IsInFormValue(ctx, columns[i]["Field"].(string)); isIn {
+			fieldStr += "`" + columns[i]["Field"].(string) + "` = ?,"
+			valueArr = append(valueArr, value)
+		}
+	}
+	valueArr = append(valueArr, id)
+
+	fieldStr = SliceStr(fieldStr)
+
+	Exec("update " + table + " set " + fieldStr + " where id = ?", valueArr...)
+
+	ctx.WriteString(`{"code":200, "msg":"ok"}`)
 }
 
 func NotFoundHandle(ctx *fasthttp.RequestCtx)  {
 	defer handle(ctx)
 	ctx.Error(`{"code":404, "msg":"route not found"}`, fasthttp.StatusNotFound)
+}
+
+func GetAllColumns(table string) []map[string]interface{} {
+	colunms, _ := Query("show columns from " + table)
+	return colunms
+}
+
+func IsInFormValue(ctx *fasthttp.RequestCtx, key string) (string, bool) {
+	mf, err := ctx.MultipartForm()
+	if err == nil && mf.Value != nil {
+		vv := mf.Value[key]
+		if len(vv) > 0 {
+			return vv[0], true
+		} else {
+			return "", false
+		}
+	} else {
+		return "", false
+	}
+}
+
+func SliceStr(s string) string {
+	if s == "" {
+		return s
+	}
+	rs := []rune(s)
+	length := len(rs)
+	return string(rs[0 : length-1])
 }
 
 // 全局错误处理
@@ -98,8 +185,22 @@ func handle(ctx *fasthttp.RequestCtx) {
 	if err := recover(); err != nil {
 		fmt.Println(err)
 		fmt.Println(string(debug.Stack()[:]))
-		ctx.Error(`{"code":500, "msg":"系统错误"}`, fasthttp.StatusInternalServerError)
-		return
+
+		var (
+			errMsg string
+			mysqlError *mysql.MySQLError
+			ok bool
+		)
+		if errMsg, ok = err.(string); ok {
+			ctx.Error(`{"code":500, "msg":"`+ errMsg + `"}`, fasthttp.StatusInternalServerError)
+			return
+		} else if mysqlError, ok = err.(*mysql.MySQLError); ok {
+			ctx.Error(`{"code":500, "msg":"`+ mysqlError.Error() + `"}`, fasthttp.StatusInternalServerError)
+			return
+		} else {
+			ctx.Error(`{"code":500, "msg":"系统错误"}`, fasthttp.StatusInternalServerError)
+			return
+		}
 	}
 }
 
