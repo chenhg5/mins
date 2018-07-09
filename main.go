@@ -27,7 +27,7 @@ func main() {
 	fmt.Println("Hello Mins")
 
 	var configFile string
-	flag.StringVar(&configFile,"c", "./config.ini", "config path")
+	flag.StringVar(&configFile, "c", "./config.ini", "config path")
 	flag.Parse()
 
 	databseCfg, configErr := GetConfig(configFile, "database")
@@ -48,7 +48,7 @@ func main() {
 
 	go func() {
 		severCfg, _ := GetConfig(configFile, "server")
-		fasthttp.ListenAndServe(":" + severCfg["port"], router.Handler)
+		fasthttp.ListenAndServe(":"+severCfg["port"], router.Handler)
 	}()
 
 	osSignals := make(chan os.Signal)
@@ -60,14 +60,14 @@ func main() {
 	fmt.Println("Bye bye~~")
 }
 
-func GetResources(ctx *fasthttp.RequestCtx)  {
+func GetResources(ctx *fasthttp.RequestCtx) {
 
 	defer handle(ctx)
 
 	table := ctx.UserValue("table").(string)
 	id := ctx.UserValue("id").(string)
 
-	resource, _ := Query("select * from " + table + " where id = ?", id)
+	resource, _ := Query("select * from "+table+" where id = ?", id)
 
 	if len(resource) < 1 {
 		ctx.SetContentType("application/json")
@@ -86,7 +86,7 @@ func GetResources(ctx *fasthttp.RequestCtx)  {
 	ctx.WriteString(`{"code":200, "msg":"ok", "data": ` + string(jsonByte[:]) + `}`)
 }
 
-func NewResources(ctx *fasthttp.RequestCtx)  {
+func NewResources(ctx *fasthttp.RequestCtx) {
 	defer handle(ctx)
 
 	table := ctx.UserValue("table").(string)
@@ -96,7 +96,7 @@ func NewResources(ctx *fasthttp.RequestCtx)  {
 	quesStr := ""
 	valueArr := make([]interface{}, 0)
 
-	for i := 0; i<len(columns) ; i++ {
+	for i := 0; i < len(columns); i++ {
 		if value, isIn := IsInFormValue(ctx, columns[i]["Field"].(string)); isIn {
 			fieldStr += "`" + columns[i]["Field"].(string) + "`,"
 			quesStr += "?,"
@@ -107,22 +107,22 @@ func NewResources(ctx *fasthttp.RequestCtx)  {
 	fieldStr = SliceStr(fieldStr)
 	quesStr = SliceStr(quesStr)
 
-	Exec("insert into " + table + "(" + fieldStr + ") " + "values (" + quesStr + ")", valueArr...)
+	Exec("insert into "+table+"("+fieldStr+") "+"values ("+quesStr+")", valueArr...)
 
 	ctx.SetContentType("application/json")
 	ctx.WriteString(`{"code":200, "msg":"ok"}`)
 }
 
-func DeleteResources(ctx *fasthttp.RequestCtx)  {
+func DeleteResources(ctx *fasthttp.RequestCtx) {
 	defer handle(ctx)
 	table := ctx.UserValue("table").(string)
 	id := ctx.UserValue("id").(string)
-	Exec("delete from " + table + " where id = ?", id)
+	Exec("delete from "+table+" where id = ?", id)
 	ctx.SetContentType("application/json")
 	ctx.WriteString(`{"code":200, "msg":"ok"}`)
 }
 
-func ModifyResources(ctx *fasthttp.RequestCtx)  {
+func ModifyResources(ctx *fasthttp.RequestCtx) {
 	defer handle(ctx)
 
 	table := ctx.UserValue("table").(string)
@@ -132,7 +132,7 @@ func ModifyResources(ctx *fasthttp.RequestCtx)  {
 	fieldStr := ""
 	valueArr := make([]interface{}, 0)
 
-	for i := 0; i<len(columns) ; i++ {
+	for i := 0; i < len(columns); i++ {
 		if value, isIn := IsInFormValue(ctx, columns[i]["Field"].(string)); isIn {
 			fieldStr += "`" + columns[i]["Field"].(string) + "` = ?,"
 			valueArr = append(valueArr, value)
@@ -142,13 +142,13 @@ func ModifyResources(ctx *fasthttp.RequestCtx)  {
 
 	fieldStr = SliceStr(fieldStr)
 
-	Exec("update " + table + " set " + fieldStr + " where id = ?", valueArr...)
+	Exec("update "+table+" set "+fieldStr+" where id = ?", valueArr...)
 
 	ctx.SetContentType("application/json")
 	ctx.WriteString(`{"code":200, "msg":"ok"}`)
 }
 
-func NotFoundHandle(ctx *fasthttp.RequestCtx)  {
+func NotFoundHandle(ctx *fasthttp.RequestCtx) {
 	defer handle(ctx)
 	ctx.SetStatusCode(fasthttp.StatusNotFound)
 	ctx.SetContentType("application/json")
@@ -180,7 +180,7 @@ func SliceStr(s string) string {
 	}
 	rs := []rune(s)
 	length := len(rs)
-	return string(rs[0 : length-1])
+	return string(rs[0: length-1])
 }
 
 // 全局错误处理
@@ -196,19 +196,19 @@ func handle(ctx *fasthttp.RequestCtx) {
 		fmt.Println(string(debug.Stack()[:]))
 
 		var (
-			errMsg string
+			errMsg     string
 			mysqlError *mysql.MySQLError
-			ok bool
+			ok         bool
 		)
 		if errMsg, ok = err.(string); ok {
 			ctx.SetStatusCode(fasthttp.StatusInternalServerError)
 			ctx.SetContentType("application/json")
-			ctx.WriteString(`{"code":500, "msg":"`+ errMsg + `"}`)
+			ctx.WriteString(`{"code":500, "msg":"` + errMsg + `"}`)
 			return
 		} else if mysqlError, ok = err.(*mysql.MySQLError); ok {
 			ctx.SetStatusCode(fasthttp.StatusInternalServerError)
 			ctx.SetContentType("application/json")
-			ctx.WriteString(`{"code":500, "msg":"`+ mysqlError.Error() + `"}`)
+			ctx.WriteString(`{"code":500, "msg":"` + mysqlError.Error() + `"}`)
 			return
 		} else {
 			ctx.SetStatusCode(fasthttp.StatusInternalServerError)
