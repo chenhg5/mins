@@ -27,29 +27,35 @@ func main() {
 	fmt.Println("Hello Mins")
 
 	var configFile string
-	flag.StringVar(&configFile, "c", "./config.ini", "config path")
+	var port string
+	flag.StringVar(&configFile, "c", "", "config path")
+	flag.StringVar(&port, "p", "4006", "server port")
 	flag.Parse()
-
-	databseCfg, configErr := GetConfig(configFile, "database")
-
-	if configErr != nil {
-		panic(configErr)
-	}
-
-	InitDB(databseCfg["user"], databseCfg["password"], databseCfg["port"], databseCfg["addr"], databseCfg["database"])
 
 	router := fasthttprouter.New()
 
-	router.GET("/resource/:table/id/:id", GetResources)
-	router.DELETE("/resource/:table/id/:id", DeleteResources)
-	router.PUT("/resource/:table/id/:id", ModifyResources)
-	router.POST("/resource/:table", NewResources)
+	if configFile != "" {
+		databseCfg, configErr := GetConfig(configFile, "database")
+
+		if configErr != nil {
+			panic(configErr)
+		}
+
+		InitDB(databseCfg["user"], databseCfg["password"], databseCfg["port"], databseCfg["addr"], databseCfg["database"])
+
+		router.GET("/resource/:table/id/:id", GetResources)
+		router.DELETE("/resource/:table/id/:id", DeleteResources)
+		router.PUT("/resource/:table/id/:id", ModifyResources)
+		router.POST("/resource/:table", NewResources)
+
+		severCfg, _ := GetConfig(configFile, "server")
+		port = severCfg["port"]
+	}
 
 	router.NotFound = NotFoundHandler
 
 	go func() {
-		severCfg, _ := GetConfig(configFile, "server")
-		fasthttp.ListenAndServe(":"+severCfg["port"], router.Handler)
+		fasthttp.ListenAndServe(":"+port, router.Handler)
 	}()
 
 	osSignals := make(chan os.Signal)
