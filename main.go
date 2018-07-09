@@ -4,26 +4,103 @@ import (
 	"runtime"
 	"fmt"
 	"github.com/larspensjo/config"
+	"github.com/buaazp/fasthttprouter"
+	"github.com/valyala/fasthttp"
 	"errors"
+	"log"
+	"github.com/json-iterator/go"
+	"github.com/mgutz/ansi"
+	"runtime/debug"
+	"strconv"
+	"os"
+	"os/signal"
 )
+
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 func main() {
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
-	fmt.Println("Hello world")
+	InitDB("root", "root", "3306", "localhost", "example")
+
+	fmt.Println("Hello Mins")
 
 	// param:
 	// config.ini
 
-	// server
+	router := fasthttprouter.New()
 
-	// router
+	router.GET("/resource/:table", GetResources)
+	router.DELETE("/resource/:table/id/:id", DeleteResources)
+	router.PUT("/resource/:table/id/:id", ModifyResources)
+	router.POST("/resource/:table", NewResources)
+	router.NotFound = NotFoundHandle
 
-	// handler
+	go func() {
+		fasthttp.ListenAndServe(":4006", router.Handler)
+	}()
 
-	// log
+	osSignals := make(chan os.Signal)
+	signal.Notify(osSignals, os.Interrupt)
 
+	<-osSignals
+
+	fmt.Println("")
+	fmt.Println("Bye bye~~")
+}
+
+func GetResources(ctx *fasthttp.RequestCtx)  {
+
+	defer handle(ctx)
+
+	table := ctx.UserValue("table").(string)
+	resource, _ := Query("select * from " + table)
+
+	jsonByte, err := json.Marshal(resource)
+
+	if err != nil {
+		ctx.Error(`{"code":500, "msg":"json marshal error"}`, fasthttp.StatusInternalServerError)
+	}
+
+	ctx.WriteString(`{"code":200, "msg":"ok", "data": ` + string(jsonByte[:]) + `}`)
+}
+
+func NewResources(ctx *fasthttp.RequestCtx)  {
+	defer handle(ctx)
+}
+
+func DeleteResources(ctx *fasthttp.RequestCtx)  {
+	defer handle(ctx)
+	table := ctx.UserValue("table").(string)
+	id := string(ctx.QueryArgs().Peek("id")[:])
+	Exec("delete from " + table + " where id = ?", id)
+	ctx.WriteString(`{"code":200, "msg":"ok"}`)
+}
+
+func ModifyResources(ctx *fasthttp.RequestCtx)  {
+	defer handle(ctx)
+}
+
+func NotFoundHandle(ctx *fasthttp.RequestCtx)  {
+	defer handle(ctx)
+	ctx.Error(`{"code":404, "msg":"route not found"}`, fasthttp.StatusNotFound)
+}
+
+// 全局错误处理
+func handle(ctx *fasthttp.RequestCtx) {
+
+	log.Println("[GoAdmin]",
+		ansi.Color(" "+strconv.Itoa(ctx.Response.StatusCode())+" ", "white:blue"),
+		ansi.Color(" "+string(ctx.Method()[:])+"   ", "white:blue+h"),
+		string(ctx.Path()))
+
+	if err := recover(); err != nil {
+		fmt.Println(err)
+		fmt.Println(string(debug.Stack()[:]))
+		ctx.Error(`{"code":500, "msg":"系统错误"}`, fasthttp.StatusInternalServerError)
+		return
+	}
 }
 
 func GetConfig(file string, sec string) (map[string]string, error) {
@@ -51,4 +128,3 @@ func GetConfig(file string, sec string) (map[string]string, error) {
 	}
 	return targetConfig, nil
 }
-
