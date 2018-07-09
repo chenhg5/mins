@@ -23,7 +23,7 @@ clean:
 
 run:
 	$(GOBUILD) -o ./build/$(BINARY_UNIX) -v ./
-	./build/$(BINARY_NAME)
+	./build/$(BINARY_UNIX)
 
 restart:
 	kill -INT $$(cat pid)
