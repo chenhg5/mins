@@ -44,7 +44,8 @@ func main() {
 	router.DELETE("/resource/:table/id/:id", DeleteResources)
 	router.PUT("/resource/:table/id/:id", ModifyResources)
 	router.POST("/resource/:table", NewResources)
-	router.NotFound = NotFoundHandle
+
+	router.NotFound = NotFoundHandler
 
 	go func() {
 		severCfg, _ := GetConfig(configFile, "server")
@@ -58,6 +59,14 @@ func main() {
 
 	fmt.Println("")
 	fmt.Println("Bye bye~~")
+}
+
+func PathExist(_path string) bool {
+	_, err := os.Stat(_path)
+	if err != nil && os.IsNotExist(err) {
+		return false
+	}
+	return true
 }
 
 func GetResources(ctx *fasthttp.RequestCtx) {
@@ -148,11 +157,26 @@ func ModifyResources(ctx *fasthttp.RequestCtx) {
 	ctx.WriteString(`{"code":200, "msg":"ok"}`)
 }
 
-func NotFoundHandle(ctx *fasthttp.RequestCtx) {
+var fs = &fasthttp.FS{
+	Root:               "./",
+	IndexNames:         []string{"index.html"},
+	GenerateIndexPages: true,
+	Compress:           false,
+	AcceptByteRange:    false,
+}
+
+var FSHandler = fs.NewRequestHandler()
+
+func NotFoundHandler(ctx *fasthttp.RequestCtx) {
 	defer handle(ctx)
-	ctx.SetStatusCode(fasthttp.StatusNotFound)
-	ctx.SetContentType("application/json")
-	ctx.WriteString(`{"code":404, "msg":"route not found"}`)
+
+	if PathExist(string(ctx.Path())) {
+		FSHandler(ctx)
+	} else {
+		ctx.SetStatusCode(fasthttp.StatusNotFound)
+		ctx.SetContentType("application/json")
+		ctx.WriteString(`{"code":404, "msg":"route not found"}`)
+	}
 }
 
 func GetAllColumns(table string) []map[string]interface{} {
