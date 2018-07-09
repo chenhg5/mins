@@ -70,15 +70,19 @@ func GetResources(ctx *fasthttp.RequestCtx)  {
 	resource, _ := Query("select * from " + table + " where id = ?", id)
 
 	if len(resource) < 1 {
+		ctx.SetContentType("application/json")
 		ctx.WriteString(`{"code":200, "msg":"ok", "data": {}}`)
 	}
 
 	jsonByte, err := json.Marshal(resource[0])
 
 	if err != nil {
-		ctx.Error(`{"code":500, "msg":"json marshal error"}`, fasthttp.StatusInternalServerError)
+		ctx.SetStatusCode(fasthttp.StatusInternalServerError)
+		ctx.SetContentType("application/json")
+		ctx.WriteString(`{"code":500, "msg":"json marshal error"}`)
 	}
 
+	ctx.SetContentType("application/json")
 	ctx.WriteString(`{"code":200, "msg":"ok", "data": ` + string(jsonByte[:]) + `}`)
 }
 
@@ -105,6 +109,7 @@ func NewResources(ctx *fasthttp.RequestCtx)  {
 
 	Exec("insert into " + table + "(" + fieldStr + ") " + "values (" + quesStr + ")", valueArr...)
 
+	ctx.SetContentType("application/json")
 	ctx.WriteString(`{"code":200, "msg":"ok"}`)
 }
 
@@ -113,6 +118,7 @@ func DeleteResources(ctx *fasthttp.RequestCtx)  {
 	table := ctx.UserValue("table").(string)
 	id := ctx.UserValue("id").(string)
 	Exec("delete from " + table + " where id = ?", id)
+	ctx.SetContentType("application/json")
 	ctx.WriteString(`{"code":200, "msg":"ok"}`)
 }
 
@@ -138,12 +144,15 @@ func ModifyResources(ctx *fasthttp.RequestCtx)  {
 
 	Exec("update " + table + " set " + fieldStr + " where id = ?", valueArr...)
 
+	ctx.SetContentType("application/json")
 	ctx.WriteString(`{"code":200, "msg":"ok"}`)
 }
 
 func NotFoundHandle(ctx *fasthttp.RequestCtx)  {
 	defer handle(ctx)
-	ctx.Error(`{"code":404, "msg":"route not found"}`, fasthttp.StatusNotFound)
+	ctx.SetStatusCode(fasthttp.StatusNotFound)
+	ctx.SetContentType("application/json")
+	ctx.WriteString(`{"code":404, "msg":"route not found"}`)
 }
 
 func GetAllColumns(table string) []map[string]interface{} {
@@ -192,13 +201,19 @@ func handle(ctx *fasthttp.RequestCtx) {
 			ok bool
 		)
 		if errMsg, ok = err.(string); ok {
-			ctx.Error(`{"code":500, "msg":"`+ errMsg + `"}`, fasthttp.StatusInternalServerError)
+			ctx.SetStatusCode(fasthttp.StatusInternalServerError)
+			ctx.SetContentType("application/json")
+			ctx.WriteString(`{"code":500, "msg":"`+ errMsg + `"}`)
 			return
 		} else if mysqlError, ok = err.(*mysql.MySQLError); ok {
-			ctx.Error(`{"code":500, "msg":"`+ mysqlError.Error() + `"}`, fasthttp.StatusInternalServerError)
+			ctx.SetStatusCode(fasthttp.StatusInternalServerError)
+			ctx.SetContentType("application/json")
+			ctx.WriteString(`{"code":500, "msg":"`+ mysqlError.Error() + `"}`)
 			return
 		} else {
-			ctx.Error(`{"code":500, "msg":"系统错误"}`, fasthttp.StatusInternalServerError)
+			ctx.SetStatusCode(fasthttp.StatusInternalServerError)
+			ctx.SetContentType("application/json")
+			ctx.WriteString(`{"code":500, "msg":"系统错误"}`)
 			return
 		}
 	}
