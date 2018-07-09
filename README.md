@@ -1,3 +1,5 @@
-# Mini Restful Server
+# Mins
 
-build a efficient restful server with only a command
+a mini restful server
+
+to build a efficient restful server with only a command
