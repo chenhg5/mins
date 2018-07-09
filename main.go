@@ -186,7 +186,7 @@ func SliceStr(s string) string {
 // 全局错误处理
 func handle(ctx *fasthttp.RequestCtx) {
 
-	log.Println("[GoAdmin]",
+	log.Println("[Mins]",
 		ansi.Color(" "+strconv.Itoa(ctx.Response.StatusCode())+" ", "white:blue"),
 		ansi.Color(" "+string(ctx.Method()[:])+"   ", "white:blue+h"),
 		string(ctx.Path()))
