@@ -29,26 +29,29 @@ func main() {
 			fmt.Println("0.0.4")
 			os.Exit(-1)
 		}
+		if os.Args[1] == "help" || os.Args[1] == "--h" || os.Args[1] == "-h" {
+			fmt.Println(" __  __ _")
+			fmt.Println(`|  \/  (_)_ __  ___`)
+			fmt.Println(`| |\/| | | '_ \/ __|`)
+			fmt.Println(`| |  | | | | | \__ \`)
+			fmt.Println(`|_|  |_|_|_| |_|___/`)
+			fmt.Printf("\n")
+			fmt.Printf("usage: \n")
+			fmt.Printf("    --v|-v|version      get current version \n")
+			fmt.Printf("    --c                 config-file-path \n")
+			fmt.Printf("    --p                 server-port, 4006 default \n")
+			fmt.Printf("\n")
+			fmt.Printf("api route: \n")
+			fmt.Printf("    GET /{table}/{id}\n")
+			fmt.Printf("    PUT /{table}/{id}\n")
+			fmt.Printf("    DELETE /{table}/{id}\n")
+			fmt.Printf("    POST /{table}\n")
+			fmt.Printf("\n")
+			os.Exit(-1)
+		}
 	}
 
 	//fmt.Println("Hello Mins")
-	fmt.Println(" __  __ _")
-	fmt.Println(`|  \/  (_)_ __  ___`)
-	fmt.Println(`| |\/| | | '_ \/ __|`)
-	fmt.Println(`| |  | | | | | \__ \`)
-	fmt.Println(`|_|  |_|_|_| |_|___/`)
-	fmt.Printf("\n")
-	fmt.Printf("usage: \n")
-	fmt.Printf("    --v|-v|version      get current version \n")
-	fmt.Printf("    --c                 config-file-path \n")
-	fmt.Printf("    --p                 server-port \n")
-	fmt.Printf("\n")
-	fmt.Printf("route: \n")
-	fmt.Printf("    GET /{table}/{id}\n")
-	fmt.Printf("    PUT /{table}/{id}\n")
-	fmt.Printf("    DELETE /{table}/{id}\n")
-	fmt.Printf("    POST /{table}\n")
-	fmt.Printf("\n")
 
 	var configFile string
 	var port string
@@ -75,6 +78,27 @@ func main() {
 		severCfg, _ := GetConfig(configFile, "server")
 		port = severCfg["port"]
 	}
+
+	fmt.Println(" __  __ _")
+	fmt.Println(`|  \/  (_)_ __  ___`)
+	fmt.Println(`| |\/| | | '_ \/ __|`)
+	fmt.Println(`| |  | | | | | \__ \`)
+	fmt.Println(`|_|  |_|_|_| |_|___/`)
+	fmt.Printf("\n")
+	fmt.Printf("listening on port %s, ", port)
+
+	if configFile != "" {
+		fmt.Printf("serve for rest api. \n\n")
+		fmt.Printf("available route: \n")
+		fmt.Printf("    GET    /{table}/{id}\n")
+		fmt.Printf("    PUT    /{table}/{id}\n")
+		fmt.Printf("    DELETE /{table}/{id}\n")
+		fmt.Printf("    POST   /{table}\n")
+	} else {
+		fmt.Printf("serve for static file. \n")
+	}
+
+	fmt.Printf("\n")
 
 	router.NotFound = NotFoundHandler
 
