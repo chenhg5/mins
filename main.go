@@ -44,9 +44,9 @@ func main() {
 	fmt.Printf("    --p                 server-port \n")
 	fmt.Printf("\n")
 	fmt.Printf("route: \n")
-	fmt.Printf("    GET /resource/{table}/id/{id}\n")
-	fmt.Printf("    PUT /resource/{table}/id/{id}\n")
-	fmt.Printf("    DELETE /resource/{table}/id/{id}\n")
+	fmt.Printf("    GET /resource/{table}/{id}\n")
+	fmt.Printf("    PUT /resource/{table}/{id}\n")
+	fmt.Printf("    DELETE /resource/{table}/{id}\n")
 	fmt.Printf("    POST /resource/{table}\n")
 	fmt.Printf("\n")
 
@@ -67,9 +67,9 @@ func main() {
 
 		InitDB(databseCfg["user"], databseCfg["password"], databseCfg["port"], databseCfg["addr"], databseCfg["database"])
 
-		router.GET("/resource/:table/id/:id", GetResources)
-		router.DELETE("/resource/:table/id/:id", DeleteResources)
-		router.PUT("/resource/:table/id/:id", ModifyResources)
+		router.GET("/resource/:table/:id", GetResources)
+		router.DELETE("/resource/:table/:id", DeleteResources)
+		router.PUT("/resource/:table/:id", ModifyResources)
 		router.POST("/resource/:table", NewResources)
 
 		severCfg, _ := GetConfig(configFile, "server")

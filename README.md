@@ -38,7 +38,7 @@ database = example
 
 | Method     | Path      |
 | :-------:  | :-----:   |
-| GET        | /resource/:table/id/:id      |
-| DELETE     | /resource/:table/id/:id      |
-| PUT        | /resource/:table/id/:id      |
-| POST       | /resource/:table             |
+| GET        | /resource/:table/:id      |
+| DELETE     | /resource/:table/:id      |
+| PUT        | /resource/:table/:id      |
+| POST       | /resource/:table          |
