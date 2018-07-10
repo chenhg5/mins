@@ -39,7 +39,7 @@ func main() {
 	fmt.Println(`|_|  |_|_|_| |_|___/`)
 	fmt.Printf("\n")
 	fmt.Printf("usage: \n")
-	fmt.Printf("    --v|-v|version      check current version \n")
+	fmt.Printf("    --v|-v|version      get current version \n")
 	fmt.Printf("    --c                 config-file-path \n")
 	fmt.Printf("    --p                 server-port \n")
 	fmt.Printf("\n")
