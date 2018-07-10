@@ -24,6 +24,13 @@ func main() {
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
+	if len(os.Args) > 1 {
+		if os.Args[1] == "version" || os.Args[1] == "--v" || os.Args[1] == "-v" {
+			fmt.Println("0.0.2")
+			os.Exit(-1)
+		}
+	}
+
 	//fmt.Println("Hello Mins")
 	fmt.Println(" __  __ _")
 	fmt.Println(`|  \/  (_)_ __  ___`)
@@ -32,8 +39,9 @@ func main() {
 	fmt.Println(`|_|  |_|_|_| |_|___/`)
 	fmt.Printf("\n")
 	fmt.Printf("usage: \n")
-	fmt.Printf("    --c config-file-path \n")
-	fmt.Printf("    --p server-port \n")
+	fmt.Printf("    --v|-v|version      check current version \n")
+	fmt.Printf("    --c                 config-file-path \n")
+	fmt.Printf("    --p                 server-port \n")
 	fmt.Printf("\n")
 	fmt.Printf("route: \n")
 	fmt.Printf("    GET /resource/{table}/id/{id}\n")
