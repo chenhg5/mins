@@ -9,14 +9,14 @@ to build a efficient restful server with only a command
 mac user
 
 ```
-wget https://github.com/chenhg5/mins/releases/download/0.0.1/mins_mac -O mins
+wget https://github.com/chenhg5/mins/releases/download/0.0.4/mins_mac -O mins
 mins -c /the/config/file/path
 ```
 
 linux user
 
 ```
-wget https://github.com/chenhg5/mins/releases/download/0.0.1/mins_linux -O mins
+wget https://github.com/chenhg5/mins/releases/download/0.0.4/mins_linux -O mins
 mins -c /the/config/file/path
 ```
 
@@ -38,7 +38,7 @@ database = example
 
 | Method     | Path      |
 | :-------:  | :-----:   |
-| GET        | /resource/:table/:id      |
-| DELETE     | /resource/:table/:id      |
-| PUT        | /resource/:table/:id      |
-| POST       | /resource/:table          |
+| GET        | /:table/:id      |
+| DELETE     | /:table/:id      |
+| PUT        | /:table/:id      |
+| POST       | /:table          |

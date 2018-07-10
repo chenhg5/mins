@@ -26,7 +26,7 @@ func main() {
 
 	if len(os.Args) > 1 {
 		if os.Args[1] == "version" || os.Args[1] == "--v" || os.Args[1] == "-v" {
-			fmt.Println("0.0.2")
+			fmt.Println("0.0.4")
 			os.Exit(-1)
 		}
 	}
@@ -67,10 +67,10 @@ func main() {
 
 		InitDB(databseCfg["user"], databseCfg["password"], databseCfg["port"], databseCfg["addr"], databseCfg["database"])
 
-		router.GET("/resource/:table/:id", GetResources)
-		router.DELETE("/resource/:table/:id", DeleteResources)
-		router.PUT("/resource/:table/:id", ModifyResources)
-		router.POST("/resource/:table", NewResources)
+		router.GET("/:table/:id", GetResources)
+		router.DELETE("/:table/:id", DeleteResources)
+		router.PUT("/:table/:id", ModifyResources)
+		router.POST("/:table", NewResources)
 
 		severCfg, _ := GetConfig(configFile, "server")
 		port = severCfg["port"]
