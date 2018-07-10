@@ -24,7 +24,16 @@ func main() {
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
-	fmt.Println("Hello Mins")
+	//fmt.Println("Hello Mins")
+	fmt.Println(" __  __ _")
+	fmt.Println(`|  \/  (_)_ __  ___`)
+	fmt.Println(`| |\/| | | '_ \/ __|`)
+	fmt.Println(`| |  | | | | | \__ \`)
+	fmt.Println(`|_|  |_|_|_| |_|___/`)
+	fmt.Printf("\n")
+	fmt.Printf("usage: \n")
+	fmt.Printf("    --c config-file-path \n")
+	fmt.Printf("    --p server-port \n")
 
 	var configFile string
 	var port string
