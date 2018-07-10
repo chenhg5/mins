@@ -36,7 +36,7 @@ deps:
 	govendor sync
 
 cross:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GOBUILD) -o ./build/$(BINARY_NAME) -v ./
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GOBUILD) -o ./build/$(BINARY_LINUX) -v ./
 
 crosswindow:
 	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 $(GOBUILD) -o ./build/$(BINARY_NAME_WINDOW) -v ./
