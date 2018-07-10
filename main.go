@@ -37,6 +37,7 @@ func main() {
 			fmt.Println(`|_|  |_|_|_| |_|___/`)
 			fmt.Printf("\n")
 			fmt.Printf("usage: \n")
+			fmt.Printf("    --h|-h|help         get help message \n")
 			fmt.Printf("    --v|-v|version      get current version \n")
 			fmt.Printf("    --c                 config-file-path \n")
 			fmt.Printf("    --p                 server-port, 4006 default \n")
