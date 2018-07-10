@@ -44,10 +44,10 @@ func main() {
 	fmt.Printf("    --p                 server-port \n")
 	fmt.Printf("\n")
 	fmt.Printf("route: \n")
-	fmt.Printf("    GET /resource/{table}/{id}\n")
-	fmt.Printf("    PUT /resource/{table}/{id}\n")
-	fmt.Printf("    DELETE /resource/{table}/{id}\n")
-	fmt.Printf("    POST /resource/{table}\n")
+	fmt.Printf("    GET /{table}/{id}\n")
+	fmt.Printf("    PUT /{table}/{id}\n")
+	fmt.Printf("    DELETE /{table}/{id}\n")
+	fmt.Printf("    POST /{table}\n")
 	fmt.Printf("\n")
 
 	var configFile string
