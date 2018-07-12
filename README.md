@@ -6,14 +6,13 @@ to build a efficient restful server with only a command
 
 ## usage
 
-mac user
+mac
 
 ```
-wget https://github.com/chenhg5/mins/releases/download/0.0.4/mins_mac -O mins
-mins -c /the/config/file/path
+brew tap chenhg5/tap && brew install mins
 ```
 
-linux user
+linux
 
 ```
 wget https://github.com/chenhg5/mins/releases/download/0.0.4/mins_linux -O mins
