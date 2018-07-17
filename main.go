@@ -168,8 +168,8 @@ func NewResources(ctx *fasthttp.RequestCtx) {
 		}
 	}
 
-	fieldStr = SliceStr(fieldStr)
-	quesStr = SliceStr(quesStr)
+	fieldStr = fieldStr[0:len(fieldStr)-1]
+	quesStr = quesStr[0:len(quesStr)-1]
 
 	Exec("insert into "+table+"("+fieldStr+") "+"values ("+quesStr+")", valueArr...)
 
@@ -204,7 +204,7 @@ func ModifyResources(ctx *fasthttp.RequestCtx) {
 	}
 	valueArr = append(valueArr, id)
 
-	fieldStr = SliceStr(fieldStr)
+	fieldStr = fieldStr[0:len(fieldStr)-1]
 
 	Exec("update "+table+" set "+fieldStr+" where id = ?", valueArr...)
 
@@ -251,15 +251,6 @@ func IsInFormValue(ctx *fasthttp.RequestCtx, key string) (string, bool) {
 	} else {
 		return "", false
 	}
-}
-
-func SliceStr(s string) string {
-	if s == "" {
-		return s
-	}
-	rs := []rune(s)
-	length := len(rs)
-	return string(rs[0: length-1])
 }
 
 // 全局错误处理
