@@ -168,10 +168,7 @@ func NewResources(ctx *fasthttp.RequestCtx) {
 		}
 	}
 
-	fieldStr = fieldStr[0:len(fieldStr)-1]
-	quesStr = quesStr[0:len(quesStr)-1]
-
-	Exec("insert into "+table+"("+fieldStr+") "+"values ("+quesStr+")", valueArr...)
+	Exec("insert into "+table+"("+fieldStr[0:len(fieldStr)-1]+") "+"values ("+quesStr[0:len(quesStr)-1]+")", valueArr...)
 
 	ctx.SetContentType("application/json")
 	ctx.WriteString(`{"code":200, "msg":"ok"}`)
@@ -204,9 +201,7 @@ func ModifyResources(ctx *fasthttp.RequestCtx) {
 	}
 	valueArr = append(valueArr, id)
 
-	fieldStr = fieldStr[0:len(fieldStr)-1]
-
-	Exec("update "+table+" set "+fieldStr+" where id = ?", valueArr...)
+	Exec("update "+table+" set "+fieldStr[0:len(fieldStr)-1]+" where id = ?", valueArr...)
 
 	ctx.SetContentType("application/json")
 	ctx.WriteString(`{"code":200, "msg":"ok"}`)
