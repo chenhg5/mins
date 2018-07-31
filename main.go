@@ -220,7 +220,7 @@ var FSHandler = fs.NewRequestHandler()
 func NotFoundHandler(ctx *fasthttp.RequestCtx) {
 	defer handle(ctx)
 
-	if PathExist(string(ctx.Path())) {
+	if PathExist("." + string(ctx.Path())) {
 		FSHandler(ctx)
 	} else {
 		ctx.SetStatusCode(fasthttp.StatusNotFound)
