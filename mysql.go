@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
+	"strconv"
 )
 
 type SqlTxStruct struct {
@@ -383,13 +384,11 @@ func SetResultValue(result *map[string]interface{}, index string, colVar interfa
 			(*result)[index] = nil
 		}
 	case "DECIMAL":
-		//temp := *(colVar.(*sql.NullInt64))
-		//if temp.Valid {
-		//	(*result)[index] = temp.Int64
-		//} else {
-		//	(*result)[index] = nil
-		//}
-		(*result)[index] = *(colVar.(*[]uint8))
+		if len(*(colVar.(*[]uint8))) < 1 {
+			(*result)[index] = nil
+		} else {
+			(*result)[index], _ = strconv.ParseFloat(string(*(colVar.(*[]uint8))), 64)
+		}
 	case "DATE":
 		temp := *(colVar.(*sql.NullString))
 		if temp.Valid {
